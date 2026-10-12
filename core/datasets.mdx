@@ -28,7 +28,7 @@ Choose **Upload file** or **Data from traces** from **New dataset**, then enter 
   <Tab title="Upload files">
     Drop **CSV, TSV, JSON, JSONL or Parquet** files anywhere on the Datasets page, or choose them in the dialog. Removable file chips show names, types, sizes and row counts. Up to 100 files form one source, appended in selection order. The upload endpoint also accepts NDJSON and gzip, up to 2 GB per file. Columns and types come from the files — numbers stay numbers, nested JSON stays JSON, and integers beyond 64 bits keep every digit.
 
-    A JSON file holding an object needs the field that names its row array: `--json-rows-field FIELD`. Overmind does not guess wrapper keys such as `data` or `rows`, and refuses the file without the flag. A top-level array or JSONL file needs no flag. The original file is kept byte for byte.
+    A JSON file holding an object needs the field that names its row array: `--json-rows-field FIELD`. Overmind does not guess wrapper keys such as `data` or `rows`, and refuses the file without the flag. A top-level array or JSONL file needs no flag. The Console and the REST create endpoint cannot select a row field, so a JSON object must go up with `overmind dataset upload`. The original file is kept byte for byte.
 
     **Documents.** PDF, DOCX, Markdown, UTF-8 text and PNG, JPEG or WebP images land as rows of text with their page regions. Scanned pages and embedded images are read with English OCR. The original file, its SHA-256 and the extraction engine versions are retained. Reading order and table structure are not reconstructed, and pages with no extractable text are listed as limitations; extracted text is evidence, not a check that the content is correct.
 
