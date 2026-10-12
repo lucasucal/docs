@@ -22,9 +22,15 @@ Choose **Upload file** or **Data from traces** from **New dataset**, then enter 
     Select runs in [Observability](/core/observability#from-traces-to-datasets) and **Add to dataset**, or choose **Data from traces** to take everything matching your current filters.
 
     Each run lands as one row: its input and delivered output, the full transcript and tools in OpenAI wire shape, model, tokens, cost, status, duration and its score. A transcript already satisfies the training contract; for eval data the agent renames `output` to `expected_output` for you.
+
+    A run that spans more than one capability carries no capability on its row. When the source filter names a capability, a trace with several invocations of it is refused rather than landed as a mixed row.
   </Tab>
   <Tab title="Upload files">
-    Drop **CSV, TSV, JSON, JSONL or Parquet** files anywhere on the Datasets page, or choose them in the dialog. Removable file chips show names, types, sizes and row counts. Up to 100 files form one source, appended in selection order. The upload endpoint also accepts NDJSON and gzip, up to 2 GB per file. Columns and types come from the files — numbers stay numbers, nested JSON stays JSON.
+    Drop **CSV, TSV, JSON, JSONL or Parquet** files anywhere on the Datasets page, or choose them in the dialog. Removable file chips show names, types, sizes and row counts. Up to 100 files form one source, appended in selection order. The upload endpoint also accepts NDJSON and gzip, up to 2 GB per file. Columns and types come from the files — numbers stay numbers, nested JSON stays JSON, and integers beyond 64 bits keep every digit.
+
+    A JSON file holding an object needs the field that names its row array: `--json-rows-field FIELD`. Overmind does not guess wrapper keys such as `data` or `rows`, and refuses the file without the flag. A top-level array or JSONL file needs no flag. The original file is kept byte for byte.
+
+    **Documents.** PDF, DOCX, Markdown, UTF-8 text and PNG, JPEG or WebP images land as rows of text with their page regions. Scanned pages and embedded images are read with English OCR. The original file, its SHA-256 and the extraction engine versions are retained. Reading order and table structure are not reconstructed, and pages with no extractable text are listed as limitations; extracted text is evidence, not a check that the content is correct.
 
     From a terminal: `overmind dataset upload FILE [--intent train|eval] [--capability <uuid>]`. See the [CLI](/platform/cli#overmind-dataset).
   </Tab>
@@ -147,6 +153,7 @@ Everything the workshop does is available over REST: create a dataset, add or ed
 | `Column 'notes' appears twice.` | Rename one of the columns |
 | `The file is not UTF-8.` | Save the file as UTF-8 and upload it again |
 | `Line 40 is not valid JSON.` | Fix that line; the file lands only when every line parses |
+| `A JSON object requires --json-rows-field …` | Pass `--json-rows-field` with the top-level array that holds the rows, or upload a top-level array or JSONL |
 | `Two rows are needed to split.` | Add rows, or create a single dataset |
 | `no messages column` / `no input column` | Select **Ask Overmind to fix it** on the cell |
 | `Longest dataset row is ≈N tokens but this model's … context is M tokens` | Drop or shorten the long rows, or pick a model with a longer context |
@@ -158,6 +165,9 @@ Everything the workshop does is available over REST: create a dataset, add or ed
 | --- | --- |
 | One uploaded file | 2 GB |
 | One `.json` document | 256 MB; use JSONL above that |
+| One document (PDF, DOCX, text, image) | 100 MiB |
+| One PDF | 2,000 pages |
+| One image | 64 megapixels; animated images are refused |
 | One value in a row | 200,000 characters; longer values become a preview marker |
 | One cell's run time | 300 seconds |
 
